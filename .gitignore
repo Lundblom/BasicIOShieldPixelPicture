@@ -1,3 +1,6 @@
-
+#*
 pixelstoicon
 *.o
+*.png
+*.swp
+.DS_Store

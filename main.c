@@ -2,8 +2,15 @@
 	Author: Me and You <3
 */
 #include <stdio.h>
+#include "lodepng.h"
+#include <stdlib.h>
 
-int main(  void )
+#define TEST_IMAGE "test.png"
+
+unsigned char* parse_image(const char* filename, unsigned *width, unsigned *height);
+char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsigned h);
+
+int main( void )
 {
 	//all pixels
 	int in[1024];
@@ -58,7 +65,65 @@ int main(  void )
 			printf("%d, ", out[i]);
 		}
 	}
+	unsigned w;
+	unsigned h;
+	unsigned char* image = parse_image(TEST_IMAGE, &w, &h);
+	char* arr = image_to_bitarray(image, w, h);
 
 
+	for(i = 0; i < h; i++)
+	{
+		for(j = 0; j < w; j++)
+		{
+			printf("%d,", arr[i*w + j] );
+		}
+		printf("\n");
+	}
+	free(image);
 	return 1;
+}
+
+unsigned char* parse_image(const char* filename, unsigned *width, unsigned *height)
+{
+	unsigned char *image;
+	unsigned error;
+	
+	unsigned tWidth;
+	unsigned tHeight;
+	error = lodepng_decode32_file(&image, &tWidth, &tHeight, filename);
+        if(error)
+	{ 
+		printf("error %u: %s\n", error, lodepng_error_text(error));	
+	}
+
+	*width = tWidth;
+	*height = tHeight;
+
+	return image;
+}
+
+char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsigned h)
+{
+	char *result = malloc(sizeof(char) * w * h);
+	int i;
+	int j;
+	for(i = 0; i < h; i++)
+        {
+                for(j = 0; j < w; j++)
+                {
+			//If Alpha is 0 or all colors are 0, we output 0
+         		if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) &&
+				(image[4*i*w + 4*j + 2]) == 0 ))
+			{
+				result[i*w + j] = 0;
+			}
+			else
+			{
+				result[i*w + j] = 1;
+			}	             
+                }
+                printf("\n");
+        }
+	
+	return result;		
 }
