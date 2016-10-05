@@ -38,7 +38,7 @@ int main(  void )
 	{
 		for(j = 0; j < 8; j++)
 		{
-			outElement += in[(i*16) + j] << (j+1);
+			outElement += in[(i*8) + j] << (j+1);
 		}
 
 		out[i] = outElement;
