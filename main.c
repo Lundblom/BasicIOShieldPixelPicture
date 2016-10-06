@@ -72,7 +72,7 @@ int main( void )
 	unsigned char* image = parse_image(TEST_IMAGE, &w, &h);
 	char* arr = image_to_bitarray(image, w, h);
 
-	int targetH = (int)(h*0.5);
+	int targetH = (int)(h*1.32);
 	int targetW = (int)(w*1.343242);
 
 	char* resizedArr = resize_bitarray(arr, w, h, targetW, targetH);
@@ -96,6 +96,10 @@ char* resize_bitarray(char *bits, const int sourceW, const int sourceH, const in
 	{
 		return bits;
 	}
+	if(targetW == 0 || targetH == 0)
+	{
+		return NULL;
+	}
 
 	int i = 0;
 	int j = 0;
@@ -109,7 +113,7 @@ char* resize_bitarray(char *bits, const int sourceW, const int sourceH, const in
 	{
 		for(j = 0; j < targetW; j++)
 		{
-			result[i*targetW + j] = bits[ (int)(floor(i * ratioH * sourceW) + floor(ratioW * j)) ] ;
+			result[i*targetW + j] = bits[ (int)(floor(i * ratioH) * sourceW + floor(ratioW * j)) ] ;
 		}
 	}
 	
@@ -145,7 +149,7 @@ char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsi
                 for(j = 0; j < w; j++)
                 {
 			//If Alpha is 0 or all colors are 0, we output 0
-			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 0 &&
+			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 1  &&
 				(image[4*i*w + 4*j + 2]) == 0 ))
 			{
 				result[i*w + j] = 0;
