@@ -145,7 +145,7 @@ char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsi
                 for(j = 0; j < w; j++)
                 {
 			//If Alpha is 0 or all colors are 0, we output 0
-			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 1 &&
+			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 0 &&
 				(image[4*i*w + 4*j + 2]) == 0 ))
 			{
 				result[i*w + j] = 0;
