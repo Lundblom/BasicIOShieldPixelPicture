@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include "lodepng.h"
 #include <stdlib.h>
+#include <math.h>
 
 #define TEST_IMAGE "test.png"
 
 unsigned char* parse_image(const char* filename, unsigned *width, unsigned *height);
 char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsigned h);
+char* resize_bitarray(char *bits, const int sourceW, const int sourceH, const int targetW, const int targetH);
 
 int main( void )
 {
@@ -70,17 +72,48 @@ int main( void )
 	unsigned char* image = parse_image(TEST_IMAGE, &w, &h);
 	char* arr = image_to_bitarray(image, w, h);
 
+	int targetH = (int)(h*0.5);
+	int targetW = (int)(w*1.343242);
 
-	for(i = 0; i < h; i++)
+	char* resizedArr = resize_bitarray(arr, w, h, targetW, targetH);
+
+	for(i = 0; i < targetH ; i++)
 	{
-		for(j = 0; j < w; j++)
+		for(j = 0; j < targetW; j++)
 		{
-			printf("%d,", arr[i*w + j] );
+			printf("%d,", resizedArr[i*(targetW) + j] );
 		}
 		printf("\n");
 	}
 	free(image);
+	free(resizedArr);
 	return 1;
+}
+
+char* resize_bitarray(char *bits, const int sourceW, const int sourceH, const int targetW, const int targetH)
+{
+	if(sourceW == targetW && sourceH == targetH)
+	{
+		return bits;
+	}
+
+	int i = 0;
+	int j = 0;
+
+	char* result = malloc(sizeof(char) * targetW * targetH);
+
+	double ratioH = sourceH / (double)targetH;
+	double ratioW = sourceW / (double)targetW;  
+
+	for(i = 0; i < targetH; i++)
+	{
+		for(j = 0; j < targetW; j++)
+		{
+			result[i*targetW + j] = bits[ (int)(floor(i * ratioH * sourceW) + floor(ratioW * j)) ] ;
+		}
+	}
+	
+	return result;	
 }
 
 unsigned char* parse_image(const char* filename, unsigned *width, unsigned *height)
@@ -112,7 +145,7 @@ char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsi
                 for(j = 0; j < w; j++)
                 {
 			//If Alpha is 0 or all colors are 0, we output 0
-			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 0 &&
+			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 1 &&
 				(image[4*i*w + 4*j + 2]) == 0 ))
 			{
 				result[i*w + j] = 0;
