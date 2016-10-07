@@ -5,15 +5,72 @@
 #include "lodepng.h"
 #include <stdlib.h>
 #include <math.h>
-
-#define TEST_IMAGE "test.png"
+#include <limits.h>
 
 unsigned char* parse_image(const char* filename, unsigned *width, unsigned *height);
 char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsigned h);
 char* resize_bitarray(char *bits, const int sourceW, const int sourceH, const int targetW, const int targetH);
 
-int main( void )
+int main( int argc, char** argv  )
 {
+	if(argc == 1)
+	{
+		printf("Append --help for correct usage.\n");
+		exit(0);
+	}
+	
+	char* filename = argv[1];
+	int target_width = -1;
+	int target_height = -1;
+	
+	int argument_location = 2;
+	//Handler for arguments
+	printf("Argc is: %d\n", argc);
+	while(argument_location < argc)
+	{
+		printf("Comparing %s\n", argv[argument_location]);
+		if(strcmp(argv[argument_location],"-w") == 0)
+		{
+			argument_location++;
+			if(argument_location >= argc)
+			{
+				printf("No argument for -w supplied\n");
+				exit(0);
+			}
+			
+			char* end;
+			long result = strtol(argv[argument_location], &end, 10);
+			if(end == argv[argument_location] || result == LONG_MAX || result == LONG_MIN)
+			{
+				printf("Incorrect integer argument to -w\n");
+				exit(0);
+			}	
+			target_width = (int)result;	
+		}
+		else if(strcmp(argv[argument_location],"-h") == 0)
+                {       
+                        argument_location++; 
+                        if(argument_location >= argc)
+                        {       
+                                printf("No argument for -h supplied\n");
+                                exit(0);
+                        }
+                        
+                        char* end;
+                        long result = strtol(argv[argument_location], &end, 10);
+                        if(end == argv[argument_location] || result == LONG_MAX || result == LONG_MIN)
+                        {       
+                                printf("Incorrect integer argument to -w\n");
+                                exit(0);
+                        }       
+                        target_height = (int)result;
+                }
+		else
+		{
+			argument_location++;
+		}
+	}
+
 	//all pixels
 	int in[1024];
 
@@ -69,21 +126,44 @@ int main( void )
 	}
 	unsigned w;
 	unsigned h;
-	unsigned char* image = parse_image(TEST_IMAGE, &w, &h);
+	unsigned char* image = parse_image(filename, &w, &h);
 	char* arr = image_to_bitarray(image, w, h);
 
-	int targetH = (int)(h*1.32);
-	int targetW = (int)(w*1.343242);
-
-	char* resizedArr = resize_bitarray(arr, w, h, targetW, targetH);
-
-	for(i = 0; i < targetH ; i++)
+	char* resizedArr = NULL;
+	if(target_width != -1 || target_height != -1)
 	{
-		for(j = 0; j < targetW; j++)
+		if(target_width == -1)
 		{
-			printf("%d,", resizedArr[i*(targetW) + j] );
+			target_width = w;
 		}
-		printf("\n");
+		if(target_height == -1)
+		{
+			target_height = h;
+		}
+		resizedArr = resize_bitarray(arr, w, h, target_width, target_height);
+	}
+
+	if(resizedArr != NULL)
+	{
+		for(i = 0; i < target_height ; i++)
+		{
+			for(j = 0; j < target_width; j++)
+			{
+				printf("%d,", resizedArr[i*(target_width) + j] );
+			}
+			printf("\n");
+		}
+	}
+	else
+	{
+		for(i = 0; i < h ; i++)
+                {
+                        for(j = 0; j < w; j++)
+                        {
+                                printf("%d,", image[i*(w) + j] );
+                        }
+                        printf("\n");
+                }
 	}
 	free(image);
 	free(resizedArr);
@@ -130,7 +210,8 @@ unsigned char* parse_image(const char* filename, unsigned *width, unsigned *heig
 	error = lodepng_decode32_file(&image, &tWidth, &tHeight, filename);
         if(error)
 	{ 
-		printf("error %u: %s\n", error, lodepng_error_text(error));	
+		printf("error %u: %s\n", error, lodepng_error_text(error));
+		exit(0);	
 	}
 
 	*width = tWidth;
@@ -149,7 +230,7 @@ char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsi
                 for(j = 0; j < w; j++)
                 {
 			//If Alpha is 0 or all colors are 0, we output 0
-			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 1  &&
+			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 0  &&
 				(image[4*i*w + 4*j + 2]) == 0 ))
 			{
 				result[i*w + j] = 0;
