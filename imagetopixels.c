@@ -7,7 +7,7 @@
 #include <math.h>
 #include <limits.h>
 
-char* bitarray_to_pixelimage(char* in, int size)
+unsigned char* bitarray_to_pixelimage(char* in, int size)
 {
 	//all pixels
 	if(size != 1024)
@@ -17,25 +17,10 @@ char* bitarray_to_pixelimage(char* in, int size)
 
 	//8 columns in 16 squares
 	//each column is represented by a (?)
-	char* out = malloc(sizeof(char) * 128);
+	unsigned char* out = malloc(sizeof(char) * 128);
 
 	int i = 0;
 	int j = 0;
-
-	//Example
-	//Set in as a striped "picture"
-	//Should put out a list of "170"
-	for(i = 0; i < 1024; i++)
-	{
-		if(i%2 == 0)
-		{
-			in[i] = 1;
-		}
-		else 
-		{
-			in[i] = 0;
-		}
-	}
 
 	//out elements used in inner loop.
 	int outElement = 0;
@@ -116,7 +101,7 @@ char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsi
                 for(j = 0; j < w; j++)
                 {
 			//If Alpha is 0 or all colors are 0, we output 0
-			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 0  &&
+			if((image[4*i*w + 4*j + 3]) == 0 || ( (image[4*i*w + 4*j + 0]) == 0 && (image[4*i*w + 4*j + 1]) == 1  &&
 				(image[4*i*w + 4*j + 2]) == 0 ))
 			{
 				result[i*w + j] = 0;

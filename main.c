@@ -14,17 +14,24 @@ int main( int argc, char** argv  )
 		printf("Append --help for correct usage.\n");
 		exit(0);
 	}
+
+	if(strcmp(argv[1],"--help") == 0)
+	{
+		printf("This program converts PNG images to a format that can be read by the Basic IO Shield\n");
+		printf("-w sets what to scale the image width to (in pixels)\n");
+		printf("-h sets what to scale the image height to (in pixels)\n");
+	}
 	
 	char* filename = argv[1];
 	int target_width = -1;
 	int target_height = -1;
+
 	
 	int argument_location = 2;
 	//Handler for arguments
-	printf("Argc is: %d\n", argc);
 	while(argument_location < argc)
 	{
-		printf("Comparing %s\n", argv[argument_location]);
+
 		if(strcmp(argv[argument_location],"-w") == 0)
 		{
 			argument_location++;
@@ -76,7 +83,6 @@ int main( int argc, char** argv  )
 	char* resizedArr = NULL;
 	if(target_width > -1 || target_height > -1)
 	{
-
 		if(target_width == -1)
 		{
 			target_width = w;
@@ -91,6 +97,8 @@ int main( int argc, char** argv  )
 	int i = 0;
 	int j = 0;
 
+	unsigned char* richards_array = bitarray_to_pixelimage(resizedArr, target_width*target_height);
+
 	if(resizedArr != NULL)
 	{
 		for(i = 0; i < target_height ; i++)
@@ -102,6 +110,19 @@ int main( int argc, char** argv  )
 			printf("\n");
 		}
 	}
+
+	if(richards_array != NULL)
+	{
+		for(i = 0; i < 16 ; i++)
+		{
+			for(j = 0; j < 8; j++)
+			{
+				printf("%u,", (unsigned int)richards_array[i*(8) + j] );
+			}
+			printf("\n");
+		}
+	}
+	/*
 	else
 	{
 		for(i = 0; i < h ; i++)
@@ -112,7 +133,7 @@ int main( int argc, char** argv  )
                         }
                         printf("\n");
                 }
-	}
+	}*/
 	free(image);
 	free(resizedArr);
 	return 1;
