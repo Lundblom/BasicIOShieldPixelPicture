@@ -20,11 +20,16 @@ int main( int argc, char** argv  )
 		printf("This program converts PNG images to a format that can be read by the Basic IO Shield\n");
 		printf("-w sets what to scale the image width to (in pixels)\n");
 		printf("-h sets what to scale the image height to (in pixels)\n");
+		printf("-i enables bit inversion\n");
+		printf("-d displays the target bit array as an image\n");
 	}
 	
 	char* filename = argv[1];
 	int target_width = -1;
 	int target_height = -1;
+	
+	int bit_invert = 0;
+	int display_image = 0;
 
 	
 	int argument_location = 2;
@@ -51,26 +56,37 @@ int main( int argc, char** argv  )
 			target_width = (int)result;	
 		}
 		else if(strcmp(argv[argument_location],"-h") == 0)
-                {       
-                        argument_location++; 
-                        if(argument_location >= argc)
-                        {       
-                                printf("No argument for -h supplied\n");
-                                exit(0);
-                        }
-                        
-                        char* end;
-                        long result = strtol(argv[argument_location], &end, 10);
-                        if(end == argv[argument_location] || result == LONG_MAX || result == LONG_MIN)
-                        {       
-                                printf("Incorrect integer argument to -w\n");
-                                exit(0);
-                        }       
-                        target_height = (int)result;
-                }
+    {       
+            argument_location++; 
+            if(argument_location >= argc)
+            {       
+                    printf("No argument for -h supplied\n");
+                    exit(0);
+            }
+            
+            char* end;
+            long result = strtol(argv[argument_location], &end, 10);
+            if(end == argv[argument_location] || result == LONG_MAX || result == LONG_MIN)
+            {       
+                    printf("Incorrect integer argument to -w\n");
+                    exit(0);
+            }       
+            target_height = (int)result;
+    }
+    else if(strcmp(argv[argument_location],"-i") == 0)
+    {       
+      argument_location++;
+      bit_invert = 1;
+    }
+    else if(strcmp(argv[argument_location],"-d") == 0)
+    {       
+      argument_location++;
+      display_image = 1;
+    }
 		else
 		{
 			argument_location++;
+			
 		}
 	}
 
@@ -97,18 +113,40 @@ int main( int argc, char** argv  )
 	int i = 0;
 	int j = 0;
 
-	unsigned char* richards_array = bitarray_to_pixelimage(resizedArr, target_width*target_height);
-
-	if(resizedArr != NULL)
+	unsigned char* richards_array;
+	if(resizedArr == NULL)
 	{
-		for(i = 0; i < target_height ; i++)
-		{
-			for(j = 0; j < target_width; j++)
-			{
-				printf("%d,", resizedArr[i*(target_width) + j] );
-			}
-			printf("\n");
-		}
+	  richards_array = bitarray_to_pixelimage(arr, w*h, bit_invert);
+	}
+	else
+	{
+	  richards_array = bitarray_to_pixelimage(resizedArr, target_width*target_height, bit_invert);
+	} 
+
+  if(display_image)
+  {
+	  if(resizedArr != NULL)
+	  {
+		  for(i = 0; i < target_height ; i++)
+		  {
+			  for(j = 0; j < target_width; j++)
+			  {
+				  printf("%d,", resizedArr[i*(target_width) + j] );
+			  }
+			  printf("\n");
+		  }
+	  }
+	  else
+	  {
+		  for(i = 0; i < h ; i++)
+      {
+              for(j = 0; j < w; j++)
+              {
+                      printf("%d,", arr[i*(w) + j] );
+              }
+              printf("\n");
+      }
+	  }
 	}
 
 	if(richards_array != NULL)
@@ -122,18 +160,8 @@ int main( int argc, char** argv  )
 			printf("\n");
 		}
 	}
-	/*
-	else
-	{
-		for(i = 0; i < h ; i++)
-                {
-                        for(j = 0; j < w; j++)
-                        {
-                                printf("%d,", arr[i*(w) + j] );
-                        }
-                        printf("\n");
-                }
-	}*/
+	
+	
 	free(image);
 	free(resizedArr);
 	return 1;

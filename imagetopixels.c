@@ -7,7 +7,7 @@
 #include <math.h>
 #include <limits.h>
 
-unsigned char* bitarray_to_pixelimage(char* in, int size)
+unsigned char* bitarray_to_pixelimage(char* in, int size, int invert)
 {
 	//all pixels
 	if(size != 1024)
@@ -21,21 +21,34 @@ unsigned char* bitarray_to_pixelimage(char* in, int size)
 
 	int i = 0;
 	int j = 0;
+	int k = 0;
 
 	//out elements used in inner loop.
 	int outElement = 0;
+	
+	int whichRow = 0;
+	int counter = 0;
 
 	//Set output array
-	for(i = 0; i < 128; i++)
+	for(i = 0; i < 4; i++)
 	{
-		for(j = 0; j < 8; j++)
-		{
-			outElement += in[(i*8) + j] << (j+1);
-		}
+	  for(j = 0; j < 32; j++)
+	  {
+		  for(k = 0; k < 8; k++)
+		  {
+			  outElement += in[(k*32) + (i*256) + j] << (k);
+		  }
+      if(invert)
+      {
+		    out[(i*32) + (j)] = outElement;
+		  }
+		  else
+      {
+		    out[(i*32) + (j)] = ~outElement;
+		  }
 
-		out[i] = outElement;
-
-		outElement = 0;
+		  outElement = 0;
+		 }
 	}
 
 	return out;
@@ -111,7 +124,6 @@ char* image_to_bitarray(const unsigned char *image, const unsigned w, const unsi
 				result[i*w + j] = 1;
 			}	             
                 }
-                printf("\n");
         }
 	
 	return result;		
