@@ -7,6 +7,56 @@
 #include <math.h>
 #include <limits.h>
 
+unsigned char* bitarray_to_pixelimage_any(char* in, int height, int width, int invert)
+{
+	int size = height * width;
+	unsigned char* out = malloc(sizeof(char) * size);
+
+	//If the pixels fit into an 8-height block, we align perfectly and dont have to
+	//Add any extra blocks
+	int vertical_blocks = (height / 8) + (height % 8 == 0 ? 0 : 1);
+
+	printf("Vertical blocks: %d\n", vertical_blocks);
+
+	int i = 0;
+	int j = 0;
+	int k = 0;
+
+	//out elements used in inner loop.
+	int out_element = 0;
+	int position_in_image = 0;
+
+	//Set output array
+	for(i = 0; i < vertical_blocks; i++)
+	{
+	  for(j = 0; j < width; j++)
+	  {
+		  for(k = 0; k < 8; k++)
+		  {
+	  		position_in_image = (k*32) + (i*256) + j;
+	  		//This will make us output "extra" pixels if we dont fit into 
+	  		//an 8-columns, but they will not be visible
+	  		//If check prevents seg faults
+	  		if(position_in_image < size)
+	  		{
+		  		out_element += in[(k*32) + (i*256) + j] << (k);
+		  	}
+		  }
+      	if(invert)
+      	{
+		  out[(i*32) + (j)] = out_element;
+	    }
+		else
+        {
+		  out[(i*32) + (j)] = ~out_element;
+	    }
+	    out_element = 0;
+	  }
+	}
+
+	return out;
+}
+
 unsigned char* bitarray_to_pixelimage(char* in, int size, int invert)
 {
 	//all pixels
@@ -24,10 +74,7 @@ unsigned char* bitarray_to_pixelimage(char* in, int size, int invert)
 	int k = 0;
 
 	//out elements used in inner loop.
-	int outElement = 0;
-	
-	int whichRow = 0;
-	int counter = 0;
+	int out_element = 0;
 
 	//Set output array
 	for(i = 0; i < 4; i++)
@@ -36,18 +83,18 @@ unsigned char* bitarray_to_pixelimage(char* in, int size, int invert)
 	  {
 		  for(k = 0; k < 8; k++)
 		  {
-			  outElement += in[(k*32) + (i*256) + j] << (k);
+			  out_element += in[(k*32) + (i*256) + j] << (k);
 		  }
       if(invert)
       {
-		    out[(i*32) + (j)] = outElement;
+		    out[(i*32) + (j)] = out_element;
 		  }
 		  else
       {
-		    out[(i*32) + (j)] = ~outElement;
+		    out[(i*32) + (j)] = ~out_element;
 		  }
 
-		  outElement = 0;
+		  out_element = 0;
 		 }
 	}
 
